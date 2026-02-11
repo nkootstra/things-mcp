@@ -32,6 +32,10 @@
     "task-management",
     "macos"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nkootstra/things-mcp"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
