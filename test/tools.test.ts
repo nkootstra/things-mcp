@@ -61,9 +61,9 @@ describe("add-todo parameter mapping", () => {
 
   test("supports use-clipboard parameter", () => {
     const url = buildUrl("add", {
-      "use-clipboard": true,
+      "use-clipboard": "replace-notes",
     });
-    expect(url).toContain("use-clipboard=true");
+    expect(url).toContain("use-clipboard=replace-notes");
   });
 });
 

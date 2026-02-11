@@ -136,6 +136,7 @@ The auth token is only needed for **updating** existing items (not for creating 
 
 Here are some things you can ask an AI assistant to do:
 
+- "Add milk, eggs, and bread to my inbox" (creates three separate to-dos)
 - "Add a to-do to buy groceries with a checklist for milk, eggs, and bread"
 - "Create a project called 'Home Renovation' with tasks for each room"
 - "Schedule my task for tomorrow evening with a deadline of Friday"
@@ -148,8 +149,8 @@ Here are some things you can ask an AI assistant to do:
 This server maps each [Things URL scheme command](https://culturedcode.com/things/support/articles/2803573/) to an MCP tool:
 
 1. The AI assistant calls a tool (e.g., `add-todo` with `title: "Buy milk"`)
-2. The server builds a `things:///` URL with the right parameters
-3. The URL is executed via the macOS `open` command, which triggers Things 3
+2. The server builds a Things URL with the right parameters
+3. If [xcall](https://github.com/martinfinke/xcall) is available, the URL is executed with x-callback-url format to capture response data; otherwise, the URL is executed via the macOS `open` command in direct format (`things:///add?...`)
 4. Things processes the command and creates/updates the item
 
 ### Response capture with xcall (optional)

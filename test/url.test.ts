@@ -4,6 +4,7 @@ import {
   buildUrl,
   buildJsonUrl,
   requireAuthToken,
+  toDirectUrl,
 } from "../src/url.js";
 
 describe("buildUrl", () => {
@@ -143,10 +144,10 @@ describe("buildUrl", () => {
 
   test("add supports use-clipboard without title", () => {
     const url = buildUrl("add", {
-      "use-clipboard": true,
+      "use-clipboard": "replace-title",
       "show-quick-entry": true,
     });
-    expect(url).toContain("use-clipboard=true");
+    expect(url).toContain("use-clipboard=replace-title");
     expect(url).toContain("show-quick-entry=true");
     expect(url).not.toContain("title=");
   });
@@ -242,6 +243,33 @@ describe("buildJsonUrl", () => {
     const dataParam = url.split("data=")[1]!;
     const decoded = JSON.parse(decodeURIComponent(dataParam));
     expect(decoded[0].attributes["checklist-items"]).toHaveLength(2);
+  });
+});
+
+describe("toDirectUrl", () => {
+  test("converts x-callback-url format to direct format", () => {
+    expect(toDirectUrl("things:///x-callback-url/add?title=Buy%20milk"))
+      .toBe("things:///add?title=Buy%20milk");
+  });
+
+  test("converts command without query params", () => {
+    expect(toDirectUrl("things:///x-callback-url/version"))
+      .toBe("things:///version");
+  });
+
+  test("converts json command URL", () => {
+    expect(toDirectUrl("things:///x-callback-url/json?data=%5B%5D"))
+      .toBe("things:///json?data=%5B%5D");
+  });
+
+  test("preserves all query parameters", () => {
+    const url = "things:///x-callback-url/add?auth-token=tok&title=Test&when=today";
+    expect(toDirectUrl(url)).toBe("things:///add?auth-token=tok&title=Test&when=today");
+  });
+
+  test("returns direct URL unchanged", () => {
+    expect(toDirectUrl("things:///add?title=Test"))
+      .toBe("things:///add?title=Test");
   });
 });
 
