@@ -1,6 +1,6 @@
 {
   "name": "@nkootstra/things-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for Things 3 on macOS — full URL scheme support",
   "type": "module",
   "main": "dist/index.js",
