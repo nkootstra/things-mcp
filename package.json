@@ -13,10 +13,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "os": [
-    "darwin"
-  ],
-  "engines": {
+"engines": {
     "node": ">=22"
   },
   "scripts": {
