@@ -26,30 +26,24 @@ jobs:
         if: steps.release.outputs.release_created
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        if: steps.release.outputs.release_created
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node
         if: steps.release.outputs.release_created
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         if: steps.release.outputs.release_created
-        run: bun install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
         if: steps.release.outputs.release_created
-        run: bun test
+        run: npm test
 
       - name: Build
         if: steps.release.outputs.release_created
-        run: bun run build
+        run: npm run build
 
       - name: Publish to npm
         if: steps.release.outputs.release_created

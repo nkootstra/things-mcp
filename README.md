@@ -8,7 +8,7 @@ Published as: `@nkootstra/things-mcp`
 
 - macOS (Things 3 is macOS-only)
 - [Things 3](https://culturedcode.com/things/) installed
-- Node.js 22+ or [Bun](https://bun.sh/)
+- Node.js 22+
 
 ## Setup
 
@@ -229,24 +229,24 @@ Every parameter from the [Things URL scheme documentation](https://culturedcode.
 
 ```bash
 # Install dependencies
-bun install
+npm install
 
 # Run with hot reload
-bun run dev
+npm run dev
 
 # Run tests
-bun test
+npm test
 
 # Build for npm
-bun run build
+npm run build
 ```
 
 ## CI and npm release automation
 
 - CI runs on GitHub Actions for all pushes to `main` and all pull requests:
-  - `bun install --frozen-lockfile`
-  - `bun test`
-  - `bun run build`
+  - `npm ci`
+  - `npm test`
+  - `npm run build`
 - Versioning and tagging are automated via `.github/workflows/release-please.yml`:
   - Runs on pushes to `main`
   - Opens/updates a Release PR with version bump + changelog
