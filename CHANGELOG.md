@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/nkootstra/things-mcp/compare/v1.0.4...v1.1.0) (2026-02-11)
+
+
+### Features
+
+* add SQLite read tools for querying Things 3 data ([#13](https://github.com/nkootstra/things-mcp/issues/13)) ([517e3a2](https://github.com/nkootstra/things-mcp/commit/517e3a285723e15b5e2d48a25431458a2caa5bbd))
+
 ## [1.0.4](https://github.com/nkootstra/things-mcp/compare/v1.0.3...v1.0.4) (2026-02-11)
 
 
