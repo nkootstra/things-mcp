@@ -164,9 +164,18 @@ function parseXcallOutput(rawOutput: string): ExecuteResult {
   return { success: true, thingsId: rawOutput };
 }
 
+/**
+ * Convert an x-callback-url format Things URL to direct format.
+ * "things:///x-callback-url/add?..." -> "things:///add?..."
+ * Used when executing via `open` instead of xcall.
+ */
+export function toDirectUrl(url: string): string {
+  return url.replace("things:///x-callback-url/", "things:///");
+}
+
 function executeWithOpen(url: string): Promise<ExecuteResult> {
   return new Promise((resolve, reject) => {
-    const proc = spawn("open", [url]);
+    const proc = spawn("open", [toDirectUrl(url)]);
 
     proc.on("close", (code) => {
       if (code !== 0) {

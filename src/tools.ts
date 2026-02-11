@@ -20,14 +20,21 @@ function registerAddTodo(server: McpServer): void {
     "add-todo",
     {
       description:
-        "Create a new to-do in Things 3. Returns immediately — the to-do appears in Things.",
+        "Create one or more to-dos in Things 3. " +
+        "When the user mentions multiple items, extract each item as a separate to-do and use 'titles' (newline-separated) instead of putting everything in one to-do. " +
+        "Each title should be a short, actionable phrase — not the user's raw prompt.",
       inputSchema: {
-        title: z.string().optional().describe("Title of the to-do (max 4,000 chars)"),
+        title: z.string().optional().describe(
+          "Title for a single to-do (max 4,000 chars). Use a short, actionable phrase — not the user's raw prompt. Ignored when 'titles' is set.",
+        ),
         titles: z
           .string()
           .optional()
           .describe(
-            "Create multiple to-dos at once — newline-separated titles. If set, 'title' is ignored.",
+            "Create multiple to-dos at once — one title per line (newline-separated). " +
+            "Use this when the user asks to add several items. " +
+            "Example: 'add milk, eggs, and bread' → titles='Milk\\nEggs\\nBread'. " +
+            "When set, 'title' is ignored.",
           ),
         notes: z.string().optional().describe("Notes for the to-do (max 10,000 chars). Markdown supported."),
         when: z
@@ -69,9 +76,13 @@ function registerAddTodo(server: McpServer): void {
           .optional()
           .describe("Show the Quick Entry dialog instead of adding directly"),
         useClipboard: z
-          .boolean()
+          .enum(["replace-title", "replace-notes", "replace-checklist-items"])
           .optional()
-          .describe("Use clipboard text for title/notes/checklist (ignored when title/titles are set)"),
+          .describe(
+            "Fill a field from the system clipboard. " +
+            "'replace-title' sets the title, 'replace-notes' sets the notes, 'replace-checklist-items' sets the checklist. " +
+            "Ignored when title/titles are set.",
+          ),
         creationDate: z
           .string()
           .optional()
