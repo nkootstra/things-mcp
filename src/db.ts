@@ -194,14 +194,14 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
         conditions.push("t.status = 0", "t.start = 0", "t.project IS NULL");
         break;
       case "today":
-        params.$todayDays = todayDays;
+        params.todayDays = todayDays;
         conditions.push(
           "t.status = 0",
           "(t.todayIndex > 0 OR (t.startDate IS NOT NULL AND t.startDate <= $todayDays))",
         );
         break;
       case "anytime":
-        params.$todayDays = todayDays;
+        params.todayDays = todayDays;
         conditions.push(
           "t.status = 0",
           "t.start = 1",
@@ -212,7 +212,7 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
         conditions.push("t.status = 0", "t.start = 2");
         break;
       case "upcoming":
-        params.$todayDays = todayDays;
+        params.todayDays = todayDays;
         conditions.push(
           "t.status = 0",
           "t.start = 1",
@@ -231,22 +231,22 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
 
   if (filters.status) {
     const statusMap = { open: 0, completed: 3, canceled: 2 };
-    params.$status = statusMap[filters.status];
+    params.status = statusMap[filters.status];
     conditions.push("t.status = $status");
   }
 
   if (filters.projectId) {
-    params.$projectId = filters.projectId;
+    params.projectId = filters.projectId;
     conditions.push("t.project = $projectId");
   }
 
   if (filters.areaId) {
-    params.$areaId = filters.areaId;
+    params.areaId = filters.areaId;
     conditions.push("(t.area = $areaId OR p.area = $areaId)");
   }
 
   if (filters.search) {
-    params.$search = `%${filters.search}%`;
+    params.search = `%${filters.search}%`;
     conditions.push("(t.title LIKE $search OR t.notes LIKE $search)");
   }
 
@@ -272,7 +272,7 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
     ORDER BY ${orderBy}
     LIMIT $limit
   `;
-  params.$limit = limit;
+  params.limit = limit;
 
   const rows = database.prepare(sql).all(params) as RawTodoRow[];
   const uuids = rows.map((r) => r.uuid);
@@ -302,7 +302,7 @@ export function queryTodoById(uuid: string): Todo | null {
     WHERE t.uuid = $uuid AND t.type = 0
   `;
 
-  const row = database.prepare(sql).get({ $uuid: uuid }) as RawTodoRow | null;
+  const row = database.prepare(sql).get({ uuid }) as RawTodoRow | null;
   if (!row) return null;
 
   const tagsMap = batchLoadTags(database, [uuid]);
@@ -319,17 +319,17 @@ export function queryProjects(filters: ProjectFilters = {}): Project[] {
 
   if (filters.status) {
     const statusMap = { open: 0, completed: 3, canceled: 2 };
-    params.$status = statusMap[filters.status];
+    params.status = statusMap[filters.status];
     conditions.push("t.status = $status");
   }
 
   if (filters.areaId) {
-    params.$areaId = filters.areaId;
+    params.areaId = filters.areaId;
     conditions.push("t.area = $areaId");
   }
 
   if (filters.search) {
-    params.$search = `%${filters.search}%`;
+    params.search = `%${filters.search}%`;
     conditions.push("(t.title LIKE $search OR t.notes LIKE $search)");
   }
 
@@ -348,7 +348,7 @@ export function queryProjects(filters: ProjectFilters = {}): Project[] {
     ORDER BY t.todayIndex ASC, t.creationDate DESC
     LIMIT $limit
   `;
-  params.$limit = limit;
+  params.limit = limit;
 
   const rows = database.prepare(sql).all(params) as RawProjectRow[];
   const uuids = rows.map((r) => r.uuid);
@@ -373,7 +373,7 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
     WHERE t.uuid = $uuid AND t.type = 1
   `;
 
-  const row = database.prepare(sql).get({ $uuid: uuid }) as RawProjectRow | null;
+  const row = database.prepare(sql).get({ uuid }) as RawProjectRow | null;
   if (!row) return null;
 
   const tagsMap = batchLoadTags(database, [uuid]);
@@ -383,7 +383,7 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
     .prepare(
       `SELECT uuid, title FROM TMTask WHERE project = $uuid AND type = 2 AND trashed = 0 ORDER BY "index" ASC`,
     )
-    .all({ $uuid: uuid }) as { uuid: string; title: string }[];
+    .all({ uuid }) as { uuid: string; title: string }[];
 
   // Load todos within this project
   const todoSql = `
@@ -401,7 +401,7 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
     WHERE t.project = $uuid AND t.type = 0 AND t.trashed = 0
     ORDER BY t."index" ASC
   `;
-  const todoRows = database.prepare(todoSql).all({ $uuid: uuid }) as RawTodoRow[];
+  const todoRows = database.prepare(todoSql).all({ uuid }) as RawTodoRow[];
   const todoUuids = todoRows.map((r) => r.uuid);
 
   const todoTagsMap = todoUuids.length > 0 ? batchLoadTags(database, todoUuids) : new Map();

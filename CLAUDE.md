@@ -24,25 +24,25 @@ This repository implements an MCP server that maps tool calls to the Things URL 
 - For commands with required mutually dependent inputs (for example `show` requiring `id` or `query`), validate and return a clear error.
 - Prefer x-callback behavior when available and preserve callback fields returned by Things.
 
-## Bun workflow
+## Node workflow
 
-Use Bun for all local workflows.
+Use Node.js and npm for all workflows.
 
-- Install: `bun install`
-- Dev: `bun run dev`
-- Test: `bun test`
-- Build: `bun run build`
+- Install: `npm install`
+- Dev: `npm run dev`
+- Test: `npm test`
+- Build: `npm run build`
 
 ## Testing expectations
 
 - Add or update tests for every behavior change.
 - Keep unit tests focused on URL generation and callback parsing.
-- Use `bun:test` only.
+- Use `vitest` only.
 - Before finishing work, run:
 
 ```bash
-bun test
-bun run build
+npm test
+npm run build
 ```
 
 ## Documentation expectations

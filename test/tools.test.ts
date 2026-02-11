@@ -1,4 +1,4 @@
-import { test, expect, describe, mock, beforeEach, afterEach } from "bun:test";
+import { test, expect, describe, afterEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerTools } from "../src/tools.js";
 import { buildUrl, buildJsonUrl } from "../src/url.js";
@@ -218,7 +218,7 @@ describe("add-json parameter mapping", () => {
       { type: "to-do", attributes: { title: "Task 2" } },
     ];
     const url = buildJsonUrl(items);
-    expect(url).toStartWith("things:///x-callback-url/json?data=");
+    expect(url.startsWith("things:///x-callback-url/json?data=")).toBe(true);
 
     const dataStr = url.split("data=")[1]!;
     const decoded = JSON.parse(decodeURIComponent(dataStr));

@@ -1,5 +1,5 @@
-import { test, expect, describe, beforeEach, afterEach } from "bun:test";
-import { Database } from "bun:sqlite";
+import { test, expect, describe, beforeEach, afterEach } from "vitest";
+import Database from "better-sqlite3";
 import {
   coreDataTimestampToISO,
   dayIntegerToDate,
@@ -178,7 +178,7 @@ function seedDatabase(db: Database): void {
 beforeEach(() => {
   testDb = new Database(":memory:");
   seedDatabase(testDb);
-  _setDb(testDb as any);
+  _setDb(testDb);
 });
 
 afterEach(() => {

@@ -1,4 +1,4 @@
-import { test, expect, describe } from "bun:test";
+import { test, expect, describe } from "vitest";
 import {
   _parseXcallOutput,
   buildUrl,
@@ -162,7 +162,7 @@ describe("buildJsonUrl", () => {
       },
     ];
     const url = buildJsonUrl(items);
-    expect(url).toStartWith("things:///x-callback-url/json?data=");
+    expect(url.startsWith("things:///x-callback-url/json?data=")).toBe(true);
     // Verify the data can be decoded back
     const dataParam = url.split("data=")[1]!;
     const decoded = JSON.parse(decodeURIComponent(dataParam));

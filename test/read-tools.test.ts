@@ -1,5 +1,5 @@
-import { test, expect, describe, beforeEach, afterEach } from "bun:test";
-import { Database } from "bun:sqlite";
+import { test, expect, describe, beforeEach, afterEach } from "vitest";
+import Database from "better-sqlite3";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerReadTools } from "../src/read-tools.js";
 import { _setDb } from "../src/db.js";
@@ -26,7 +26,7 @@ describe("read tool registration", () => {
         task TEXT, "index" INTEGER DEFAULT 0
       );
     `);
-    _setDb(testDb as any);
+    _setDb(testDb);
   });
 
   afterEach(() => {

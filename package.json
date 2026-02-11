@@ -21,9 +21,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "bun --hot src/index.ts",
-    "test": "bun test",
-    "prepublishOnly": "bun run build"
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
@@ -44,7 +44,8 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "@types/bun": "latest",
-    "typescript": "^5"
+    "tsx": "^4",
+    "typescript": "^5",
+    "vitest": "^3"
   }
 }
