@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/nkootstra/things-mcp/compare/v1.1.4...v1.1.5) (2026-02-11)
+
+
+### Bug Fixes
+
+* use sqlite3 backup for WAL support and rename actionGroup to heading ([a321f32](https://github.com/nkootstra/things-mcp/commit/a321f32379427922cee90f148615dae3e6bea7f6))
+
 ## [1.1.4](https://github.com/nkootstra/things-mcp/compare/v1.1.3...v1.1.4) (2026-02-11)
 
 
