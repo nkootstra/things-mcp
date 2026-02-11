@@ -8,7 +8,7 @@ Published as: `@nkootstra/things-mcp`
 
 - macOS (Things 3 is macOS-only)
 - [Things 3](https://culturedcode.com/things/) installed
-- [Bun](https://bun.sh/) runtime
+- Node.js 18+ or [Bun](https://bun.sh/)
 
 ## Setup
 
@@ -20,7 +20,7 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "things": {
-      "command": "bunx",
+      "command": "npx",
       "args": ["-y", "@nkootstra/things-mcp"],
       "env": {
         "THINGS_AUTH_TOKEN": "your-auth-token-here"
@@ -32,10 +32,12 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Then restart Claude Desktop.
 
+> **Tip:** You can also use `bunx` instead of `npx` if you have Bun installed.
+
 ### Claude Code
 
 ```bash
-claude mcp add things -- bunx -y @nkootstra/things-mcp
+claude mcp add things -- npx -y @nkootstra/things-mcp
 ```
 
 Set the auth token in your environment:
@@ -49,13 +51,13 @@ export THINGS_AUTH_TOKEN="your-auth-token-here"
 Run directly:
 
 ```bash
-THINGS_AUTH_TOKEN="your-token" bunx -y @nkootstra/things-mcp
+THINGS_AUTH_TOKEN="your-token" npx -y @nkootstra/things-mcp
 ```
 
 Or install globally:
 
 ```bash
-bun install -g @nkootstra/things-mcp
+npm install -g @nkootstra/things-mcp
 THINGS_AUTH_TOKEN="your-token" things-mcp
 ```
 
@@ -64,13 +66,13 @@ THINGS_AUTH_TOKEN="your-token" things-mcp
 ### 1) Run without installing globally
 
 ```bash
-THINGS_AUTH_TOKEN="your-token" bunx -y @nkootstra/things-mcp
+THINGS_AUTH_TOKEN="your-token" npx -y @nkootstra/things-mcp
 ```
 
 ### 2) Install globally and run
 
 ```bash
-bun install -g @nkootstra/things-mcp
+npm install -g @nkootstra/things-mcp
 things-mcp
 ```
 
@@ -80,7 +82,7 @@ things-mcp
 {
   "mcpServers": {
     "things": {
-      "command": "bunx",
+      "command": "npx",
       "args": ["-y", "@nkootstra/things-mcp"],
       "env": {
         "THINGS_AUTH_TOKEN": "your-auth-token-here"

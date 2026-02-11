@@ -1,4 +1,5 @@
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
+type SqliteDatabase = InstanceType<typeof Database>;
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
@@ -116,10 +117,10 @@ export function todayAsDayInteger(): number {
 
 // --- Database Connection ---
 
-let db: Database | null = null;
+let db: SqliteDatabase | null = null;
 
 /** Exported for testing: inject a database instance */
-export function _setDb(database: Database | null): void {
+export function _setDb(database: SqliteDatabase | null): void {
   db = database;
 }
 
@@ -151,7 +152,7 @@ export function detectDbPath(): string {
 }
 
 /** Get or create the database connection (lazy singleton, read-only) */
-export function getDb(): Database {
+export function getDb(): SqliteDatabase {
   if (db) return db;
   const path = detectDbPath();
   db = new Database(path, { readonly: true });
@@ -496,7 +497,7 @@ interface RawProjectRow {
   totalTodoCount?: number;
 }
 
-function batchLoadTags(database: Database, uuids: string[]): Map<string, string[]> {
+function batchLoadTags(database: SqliteDatabase, uuids: string[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
   if (uuids.length === 0) return map;
 
@@ -522,7 +523,7 @@ function batchLoadTags(database: Database, uuids: string[]): Map<string, string[
   return map;
 }
 
-function batchLoadChecklists(database: Database, uuids: string[]): Map<string, ChecklistItem[]> {
+function batchLoadChecklists(database: SqliteDatabase, uuids: string[]): Map<string, ChecklistItem[]> {
   const map = new Map<string, ChecklistItem[]>();
   if (uuids.length === 0) return map;
 

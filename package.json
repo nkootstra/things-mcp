@@ -17,7 +17,7 @@
     "darwin"
   ],
   "engines": {
-    "bun": ">=1.0"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc",
@@ -39,9 +39,11 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "better-sqlite3": "^12.6.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "typescript": "^5"
   }
