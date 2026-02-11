@@ -117,11 +117,11 @@ export function todayAsDayInteger(): number {
 
 // --- Database Connection ---
 
-let db: SqliteAdapter | null = null;
+let testDb: SqliteAdapter | null = null;
 
 /** Exported for testing: inject a database instance */
 export function _setDb(database: SqliteAdapter | null): void {
-  db = database;
+  testDb = database;
 }
 
 /** Detect the Things SQLite database path */
@@ -172,13 +172,16 @@ function readSqliteFile(dbPath: string): Buffer {
   }
 }
 
-/** Get or create the database connection (lazy singleton, read-only) */
+/**
+ * Get a database connection. In test mode, returns the injected instance.
+ * In production, reads a fresh snapshot on every call so that changes
+ * made in Things 3 between tool invocations are always visible.
+ */
 export function getDb(): SqliteAdapter {
-  if (db) return db;
+  if (testDb) return testDb;
   const path = detectDbPath();
   const data = readSqliteFile(path);
-  db = createAdapter(data);
-  return db;
+  return createAdapter(data);
 }
 
 // --- Status/Start Helpers ---
