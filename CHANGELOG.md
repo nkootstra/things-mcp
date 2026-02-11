@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/nkootstra/things-mcp/compare/v1.1.1...v1.1.2) (2026-02-11)
+
+
+### Bug Fixes
+
+* **ci:** remove os restriction that blocks Linux CI runners ([a4cd12b](https://github.com/nkootstra/things-mcp/commit/a4cd12b7134ee13cae5c748ea494816b73e37198))
+* **ci:** use --ignore-platform for npm ci on Linux runners ([6bd3d0f](https://github.com/nkootstra/things-mcp/commit/6bd3d0f47053b95b33ecd9bb2f319f710dadbfac))
+* migrate from bun to node for Claude Desktop compatibility ([74c6ac0](https://github.com/nkootstra/things-mcp/commit/74c6ac093e3748fa289415f9dc9b2cee76cd4051))
+
 ## [1.1.1](https://github.com/nkootstra/things-mcp/compare/v1.1.0...v1.1.1) (2026-02-11)
 
 
