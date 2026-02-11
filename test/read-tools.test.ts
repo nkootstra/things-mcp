@@ -21,7 +21,7 @@ describe("read tool registration", () => {
         uuid TEXT PRIMARY KEY, title TEXT, notes TEXT, type INTEGER DEFAULT 0,
         status INTEGER DEFAULT 0, start INTEGER DEFAULT 0, startDate INTEGER,
         deadline INTEGER, todayIndex INTEGER DEFAULT 0, project TEXT, area TEXT,
-        actionGroup TEXT, trashed INTEGER DEFAULT 0, creationDate REAL DEFAULT 0,
+        heading TEXT, trashed INTEGER DEFAULT 0, creationDate REAL DEFAULT 0,
         userModificationDate REAL, stopDate REAL, "index" INTEGER DEFAULT 0
       );
       CREATE TABLE TMTaskTag (tasks TEXT, tags TEXT);

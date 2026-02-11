@@ -92,7 +92,7 @@ function seedDatabase(db: SqliteAdapter): void {
       todayIndex INTEGER DEFAULT 0,
       project TEXT,
       area TEXT,
-      actionGroup TEXT,
+      heading TEXT,
       trashed INTEGER DEFAULT 0,
       creationDate REAL DEFAULT 0,
       userModificationDate REAL,
@@ -148,7 +148,7 @@ function seedDatabase(db: SqliteAdapter): void {
   // Seed todos (type=0)
   const todayDays = todayAsDayInteger();
   db.exec(`
-    INSERT INTO TMTask (uuid, title, notes, type, status, start, startDate, deadline, todayIndex, project, area, actionGroup, trashed, creationDate, userModificationDate, stopDate, "index") VALUES
+    INSERT INTO TMTask (uuid, title, notes, type, status, start, startDate, deadline, todayIndex, project, area, heading, trashed, creationDate, userModificationDate, stopDate, "index") VALUES
       ('todo-inbox-1', 'Buy groceries', 'Need milk and eggs', 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, 0, 700000000, 700000100, NULL, 0),
       ('todo-inbox-2', 'Call dentist', '', 0, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, 0, 700000200, NULL, NULL, 1),
       ('todo-today-1', 'Review PR', 'Check the code', 0, 0, 1, NULL, NULL, 1, 'proj-2', 'area-work', NULL, 0, 700000300, NULL, NULL, 0),

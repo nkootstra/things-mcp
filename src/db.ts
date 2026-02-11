@@ -1,7 +1,8 @@
 import { createAdapter, type SqliteAdapter } from "./sqlite-adapter.js";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, unlinkSync, rmdirSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 
 // --- Types ---
 
@@ -150,11 +151,32 @@ export function detectDbPath(): string {
   return join(groupContainers, thingsData, "Things Database.thingsdatabase", "main.sqlite");
 }
 
+/**
+ * Read a SQLite database file with WAL support.
+ * Uses `sqlite3 .backup` to produce a clean snapshot that includes
+ * any changes still in the WAL journal. Falls back to a raw file
+ * read if the sqlite3 CLI is unavailable.
+ */
+function readSqliteFile(dbPath: string): Buffer {
+  const tmp = mkdtempSync(join(tmpdir(), "things-mcp-"));
+  const tmpFile = join(tmp, "backup.sqlite");
+  try {
+    execSync(`sqlite3 "${dbPath}" ".backup '${tmpFile}'"`, { stdio: "pipe" });
+    return readFileSync(tmpFile);
+  } catch {
+    // sqlite3 CLI unavailable — fall back to raw read
+    return readFileSync(dbPath);
+  } finally {
+    try { unlinkSync(tmpFile); } catch {}
+    try { rmdirSync(tmp); } catch {}
+  }
+}
+
 /** Get or create the database connection (lazy singleton, read-only) */
 export function getDb(): SqliteAdapter {
   if (db) return db;
   const path = detectDbPath();
-  const data = readFileSync(path);
+  const data = readSqliteFile(path);
   db = createAdapter(data);
   return db;
 }
@@ -260,13 +282,13 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
       t.startDate, t.deadline, t.todayIndex,
       t.project AS projectId, p.title AS projectTitle,
       t.area AS areaId, a.title AS areaTitle,
-      t.actionGroup AS headingId, h.title AS headingTitle,
+      t.heading AS headingId, h.title AS headingTitle,
       t.creationDate, t.userModificationDate AS modificationDate,
       t.stopDate AS completionDate
     FROM TMTask t
     LEFT JOIN TMTask p ON t.project = p.uuid
     LEFT JOIN TMArea a ON COALESCE(t.area, p.area) = a.uuid
-    LEFT JOIN TMTask h ON t.actionGroup = h.uuid AND h.type = 2
+    LEFT JOIN TMTask h ON t.heading = h.uuid AND h.type = 2
     WHERE ${conditions.join(" AND ")}
     ORDER BY ${orderBy}
     LIMIT $limit
@@ -291,13 +313,13 @@ export function queryTodoById(uuid: string): Todo | null {
       t.startDate, t.deadline, t.todayIndex,
       t.project AS projectId, p.title AS projectTitle,
       t.area AS areaId, a.title AS areaTitle,
-      t.actionGroup AS headingId, h.title AS headingTitle,
+      t.heading AS headingId, h.title AS headingTitle,
       t.creationDate, t.userModificationDate AS modificationDate,
       t.stopDate AS completionDate
     FROM TMTask t
     LEFT JOIN TMTask p ON t.project = p.uuid
     LEFT JOIN TMArea a ON COALESCE(t.area, p.area) = a.uuid
-    LEFT JOIN TMTask h ON t.actionGroup = h.uuid AND h.type = 2
+    LEFT JOIN TMTask h ON t.heading = h.uuid AND h.type = 2
     WHERE t.uuid = $uuid AND t.type = 0
   `;
 
@@ -390,12 +412,12 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
       t.startDate, t.deadline, t.todayIndex,
       t.project AS projectId, $uuid AS projectTitle,
       t.area AS areaId, a2.title AS areaTitle,
-      t.actionGroup AS headingId, h.title AS headingTitle,
+      t.heading AS headingId, h.title AS headingTitle,
       t.creationDate, t.userModificationDate AS modificationDate,
       t.stopDate AS completionDate
     FROM TMTask t
     LEFT JOIN TMArea a2 ON t.area = a2.uuid
-    LEFT JOIN TMTask h ON t.actionGroup = h.uuid AND h.type = 2
+    LEFT JOIN TMTask h ON t.heading = h.uuid AND h.type = 2
     WHERE t.project = $uuid AND t.type = 0 AND t.trashed = 0
     ORDER BY t."index" ASC
   `;
