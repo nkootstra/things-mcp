@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6](https://github.com/nkootstra/things-mcp/compare/v1.1.5...v1.1.6) (2026-02-11)
+
+
+### Bug Fixes
+
+* read fresh database snapshot on every tool call ([1a587b5](https://github.com/nkootstra/things-mcp/commit/1a587b561312f3e8cf43efb6756cbbacfe8a8d3b))
+
 ## [1.1.5](https://github.com/nkootstra/things-mcp/compare/v1.1.4...v1.1.5) (2026-02-11)
 
 
