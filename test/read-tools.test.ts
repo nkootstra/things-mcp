@@ -26,7 +26,7 @@ describe("read tool registration", () => {
         task TEXT, "index" INTEGER DEFAULT 0
       );
     `);
-    _setDb(testDb);
+    _setDb(testDb as any);
   });
 
   afterEach(() => {

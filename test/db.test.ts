@@ -178,7 +178,7 @@ function seedDatabase(db: Database): void {
 beforeEach(() => {
   testDb = new Database(":memory:");
   seedDatabase(testDb);
-  _setDb(testDb);
+  _setDb(testDb as any);
 });
 
 afterEach(() => {
