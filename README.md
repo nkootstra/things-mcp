@@ -1,6 +1,6 @@
 # things-mcp
 
-MCP server for [Things 3](https://culturedcode.com/things/) on macOS. Exposes the full [Things URL scheme](https://culturedcode.com/things/support/articles/2803573/) as tools — create to-dos, projects, bulk operations, and more.
+MCP server for [Things 3](https://culturedcode.com/things/) on macOS. Exposes the full [Things URL scheme](https://culturedcode.com/things/support/articles/2803573/) as tools — create to-dos, projects, bulk operations, and more. Also reads directly from the Things SQLite database so an AI assistant can query your tasks, projects, areas, and tags without opening the app.
 
 Published as: `@nkootstra/things-mcp`
 
@@ -8,7 +8,7 @@ Published as: `@nkootstra/things-mcp`
 
 - macOS (Things 3 is macOS-only)
 - [Things 3](https://culturedcode.com/things/) installed
-- Node.js 18+ or Bun
+- [Bun](https://bun.sh/) runtime
 
 ## Setup
 
@@ -20,7 +20,7 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "things": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "@nkootstra/things-mcp"],
       "env": {
         "THINGS_AUTH_TOKEN": "your-auth-token-here"
@@ -35,7 +35,7 @@ Then restart Claude Desktop.
 ### Claude Code
 
 ```bash
-claude mcp add things -- npx -y @nkootstra/things-mcp
+claude mcp add things -- bunx -y @nkootstra/things-mcp
 ```
 
 Set the auth token in your environment:
@@ -49,13 +49,13 @@ export THINGS_AUTH_TOKEN="your-auth-token-here"
 Run directly:
 
 ```bash
-THINGS_AUTH_TOKEN="your-token" npx -y @nkootstra/things-mcp
+THINGS_AUTH_TOKEN="your-token" bunx -y @nkootstra/things-mcp
 ```
 
 Or install globally:
 
 ```bash
-npm install -g @nkootstra/things-mcp
+bun install -g @nkootstra/things-mcp
 THINGS_AUTH_TOKEN="your-token" things-mcp
 ```
 
@@ -64,13 +64,13 @@ THINGS_AUTH_TOKEN="your-token" things-mcp
 ### 1) Run without installing globally
 
 ```bash
-THINGS_AUTH_TOKEN="your-token" npx -y @nkootstra/things-mcp
+THINGS_AUTH_TOKEN="your-token" bunx -y @nkootstra/things-mcp
 ```
 
 ### 2) Install globally and run
 
 ```bash
-npm install -g @nkootstra/things-mcp
+bun install -g @nkootstra/things-mcp
 things-mcp
 ```
 
@@ -80,7 +80,7 @@ things-mcp
 {
   "mcpServers": {
     "things": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "@nkootstra/things-mcp"],
       "env": {
         "THINGS_AUTH_TOKEN": "your-auth-token-here"
@@ -92,14 +92,16 @@ things-mcp
 
 ### 4) What usage looks like in an MCP client
 
+- "What's on my today list?"
+- "Show me all my projects and their progress"
+- "Search for tasks about groceries"
 - "Add a to-do to buy groceries with a checklist for milk, eggs, and bread"
 - "Create a project called Home Renovation with tasks for each room"
-- "Show me my Today list"
 - "Mark task XYZ as completed" (requires `THINGS_AUTH_TOKEN`)
 
 ## Getting your auth token
 
-The auth token is only needed for **updating** existing items (not for creating new ones).
+The auth token is only needed for **updating** existing items (not for creating or reading).
 
 1. Open **Things 3**
 2. Go to **Settings** → **General**
@@ -108,6 +110,17 @@ The auth token is only needed for **updating** existing items (not for creating 
 5. Copy the token and add it to your MCP client config
 
 ## Available tools
+
+### Reading (from SQLite database)
+
+| Tool | Description |
+|---|---|
+| `get-todos` | Get to-dos with flexible filtering by list (inbox, today, anytime, someday, upcoming, logbook, trash), project, area, tag, status, or search text |
+| `get-todo` | Get a single to-do by UUID with full details (notes, checklist, tags, project, area) |
+| `get-projects` | List projects with open/total to-do counts, filterable by status, area, or search |
+| `get-project` | Get a single project by UUID with headings and organized to-dos |
+| `get-areas` | List all areas |
+| `get-tags` | List all tags with parent relationships |
 
 ### Creating
 
@@ -136,17 +149,22 @@ The auth token is only needed for **updating** existing items (not for creating 
 
 Here are some things you can ask an AI assistant to do:
 
+- "What's on my today list?" (uses `get-todos` with `list: "today"`)
+- "Show me all my projects" (uses `get-projects`)
+- "Search for tasks about groceries" (uses `get-todos` with `search: "groceries"`)
+- "What tasks are in my Work area?" (uses `get-todos` with `areaId`)
 - "Add milk, eggs, and bread to my inbox" (creates three separate to-dos)
 - "Add a to-do to buy groceries with a checklist for milk, eggs, and bread"
 - "Create a project called 'Home Renovation' with tasks for each room"
 - "Schedule my task for tomorrow evening with a deadline of Friday"
-- "Show me my Today list"
 - "Mark task XYZ as completed" (needs auth token)
 - "Create 10 tasks for my weekly review using the JSON tool"
 
 ## How it works
 
-This server maps each [Things URL scheme command](https://culturedcode.com/things/support/articles/2803573/) to an MCP tool:
+**Reading data**: The read tools (`get-todos`, `get-projects`, etc.) query the Things 3 SQLite database directly in read-only mode. The database is auto-detected at `~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/ThingsData-*/Things Database.thingsdatabase/main.sqlite`. You can override the path with the `THINGS_DB_PATH` environment variable.
+
+**Writing data**: The write tools map each [Things URL scheme command](https://culturedcode.com/things/support/articles/2803573/) to an MCP tool:
 
 1. The AI assistant calls a tool (e.g., `add-todo` with `title: "Buy milk"`)
 2. The server builds a Things URL with the right parameters
@@ -160,6 +178,22 @@ By default, commands are fire-and-forget — Things processes them but doesn't r
 ## All parameters
 
 Every parameter from the [Things URL scheme documentation](https://culturedcode.com/things/support/articles/2803573/) is supported. The tools use camelCase naming (e.g., `checklistItems` instead of `checklist-items`) which gets mapped to the correct URL parameters automatically.
+
+### get-todos parameters
+
+`list` (inbox, today, anytime, someday, upcoming, logbook, trash), `projectId`, `areaId`, `tag`, `status` (open, completed, canceled), `search`, `limit`
+
+### get-todo parameters
+
+`id` (required)
+
+### get-projects parameters
+
+`status` (open, completed, canceled), `areaId`, `search`, `limit`
+
+### get-project parameters
+
+`id` (required)
 
 ### add-todo parameters
 

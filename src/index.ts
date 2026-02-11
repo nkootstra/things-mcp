@@ -1,8 +1,9 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools.js";
+import { registerReadTools } from "./read-tools.js";
 
 const server = new McpServer({
   name: "things-mcp",
@@ -10,6 +11,7 @@ const server = new McpServer({
 });
 
 registerTools(server);
+registerReadTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

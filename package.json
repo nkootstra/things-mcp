@@ -17,7 +17,7 @@
     "darwin"
   ],
   "engines": {
-    "node": ">=18"
+    "bun": ">=1.0"
   },
   "scripts": {
     "build": "tsc",
