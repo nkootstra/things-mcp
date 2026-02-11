@@ -4,6 +4,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerTools } from "./tools.js";
 import { registerReadTools } from "./read-tools.js";
+import { initSql } from "./sqlite-adapter.js";
+
+await initSql();
 
 const server = new McpServer({
   name: "things-mcp",

@@ -1,6 +1,5 @@
-import Database from "better-sqlite3";
-type SqliteDatabase = InstanceType<typeof Database>;
-import { readdirSync } from "node:fs";
+import { createAdapter, type SqliteAdapter } from "./sqlite-adapter.js";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
@@ -117,10 +116,10 @@ export function todayAsDayInteger(): number {
 
 // --- Database Connection ---
 
-let db: SqliteDatabase | null = null;
+let db: SqliteAdapter | null = null;
 
 /** Exported for testing: inject a database instance */
-export function _setDb(database: SqliteDatabase | null): void {
+export function _setDb(database: SqliteAdapter | null): void {
   db = database;
 }
 
@@ -152,11 +151,11 @@ export function detectDbPath(): string {
 }
 
 /** Get or create the database connection (lazy singleton, read-only) */
-export function getDb(): SqliteDatabase {
+export function getDb(): SqliteAdapter {
   if (db) return db;
   const path = detectDbPath();
-  db = new Database(path, { readonly: true });
-  db.exec("PRAGMA journal_mode = WAL");
+  const data = readFileSync(path);
+  db = createAdapter(data);
   return db;
 }
 
@@ -274,7 +273,7 @@ export function queryTodos(filters: TodoFilters = {}): Todo[] {
   `;
   params.limit = limit;
 
-  const rows = database.prepare(sql).all(params) as RawTodoRow[];
+  const rows = database.all<RawTodoRow>(sql, params);
   const uuids = rows.map((r) => r.uuid);
   if (uuids.length === 0) return [];
 
@@ -302,7 +301,7 @@ export function queryTodoById(uuid: string): Todo | null {
     WHERE t.uuid = $uuid AND t.type = 0
   `;
 
-  const row = database.prepare(sql).get({ uuid }) as RawTodoRow | null;
+  const row = database.get<RawTodoRow>(sql, { uuid });
   if (!row) return null;
 
   const tagsMap = batchLoadTags(database, [uuid]);
@@ -350,7 +349,7 @@ export function queryProjects(filters: ProjectFilters = {}): Project[] {
   `;
   params.limit = limit;
 
-  const rows = database.prepare(sql).all(params) as RawProjectRow[];
+  const rows = database.all<RawProjectRow>(sql, params);
   const uuids = rows.map((r) => r.uuid);
   if (uuids.length === 0) return [];
 
@@ -373,17 +372,16 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
     WHERE t.uuid = $uuid AND t.type = 1
   `;
 
-  const row = database.prepare(sql).get({ uuid }) as RawProjectRow | null;
+  const row = database.get<RawProjectRow>(sql, { uuid });
   if (!row) return null;
 
   const tagsMap = batchLoadTags(database, [uuid]);
 
   // Load headings
-  const headings = database
-    .prepare(
-      `SELECT uuid, title FROM TMTask WHERE project = $uuid AND type = 2 AND trashed = 0 ORDER BY "index" ASC`,
-    )
-    .all({ uuid }) as { uuid: string; title: string }[];
+  const headings = database.all<{ uuid: string; title: string }>(
+    `SELECT uuid, title FROM TMTask WHERE project = $uuid AND type = 2 AND trashed = 0 ORDER BY "index" ASC`,
+    { uuid },
+  );
 
   // Load todos within this project
   const todoSql = `
@@ -401,7 +399,7 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
     WHERE t.project = $uuid AND t.type = 0 AND t.trashed = 0
     ORDER BY t."index" ASC
   `;
-  const todoRows = database.prepare(todoSql).all({ uuid }) as RawTodoRow[];
+  const todoRows = database.all<RawTodoRow>(todoSql, { uuid });
   const todoUuids = todoRows.map((r) => r.uuid);
 
   const todoTagsMap = todoUuids.length > 0 ? batchLoadTags(database, todoUuids) : new Map();
@@ -433,9 +431,9 @@ export function queryProjectById(uuid: string): ProjectDetail | null {
 
 export function queryAreas(): Area[] {
   const database = getDb();
-  const rows = database
-    .prepare(`SELECT uuid, title, visible FROM TMArea ORDER BY "index" ASC`)
-    .all() as { uuid: string; title: string; visible: number }[];
+  const rows = database.all<{ uuid: string; title: string; visible: number }>(
+    `SELECT uuid, title, visible FROM TMArea ORDER BY "index" ASC`,
+  );
 
   return rows.map((r) => ({
     uuid: r.uuid,
@@ -446,9 +444,9 @@ export function queryAreas(): Area[] {
 
 export function queryTags(): Tag[] {
   const database = getDb();
-  const rows = database
-    .prepare(`SELECT uuid, title, shortcut, parent FROM TMTag ORDER BY title ASC`)
-    .all() as { uuid: string; title: string; shortcut: string | null; parent: string | null }[];
+  const rows = database.all<{ uuid: string; title: string; shortcut: string | null; parent: string | null }>(
+    `SELECT uuid, title, shortcut, parent FROM TMTag ORDER BY title ASC`,
+  );
 
   return rows.map((r) => ({
     uuid: r.uuid,
@@ -497,20 +495,19 @@ interface RawProjectRow {
   totalTodoCount?: number;
 }
 
-function batchLoadTags(database: SqliteDatabase, uuids: string[]): Map<string, string[]> {
+function batchLoadTags(database: SqliteAdapter, uuids: string[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
   if (uuids.length === 0) return map;
 
   const placeholders = uuids.map(() => "?").join(",");
-  const rows = database
-    .prepare(
-      `SELECT tt.tasks AS taskUuid, t.title
+  const rows = database.all<{ taskUuid: string; title: string }>(
+    `SELECT tt.tasks AS taskUuid, t.title
        FROM TMTaskTag tt
        JOIN TMTag t ON tt.tags = t.uuid
        WHERE tt.tasks IN (${placeholders})
        ORDER BY t.title ASC`,
-    )
-    .all(...uuids) as { taskUuid: string; title: string }[];
+    uuids,
+  );
 
   for (const row of rows) {
     const existing = map.get(row.taskUuid);
@@ -523,19 +520,18 @@ function batchLoadTags(database: SqliteDatabase, uuids: string[]): Map<string, s
   return map;
 }
 
-function batchLoadChecklists(database: SqliteDatabase, uuids: string[]): Map<string, ChecklistItem[]> {
+function batchLoadChecklists(database: SqliteAdapter, uuids: string[]): Map<string, ChecklistItem[]> {
   const map = new Map<string, ChecklistItem[]>();
   if (uuids.length === 0) return map;
 
   const placeholders = uuids.map(() => "?").join(",");
-  const rows = database
-    .prepare(
-      `SELECT uuid, title, status, task
+  const rows = database.all<{ uuid: string; title: string; status: number; task: string }>(
+    `SELECT uuid, title, status, task
        FROM TMChecklistItem
        WHERE task IN (${placeholders})
        ORDER BY "index" ASC`,
-    )
-    .all(...uuids) as { uuid: string; title: string; status: number; task: string }[];
+    uuids,
+  );
 
   for (const row of rows) {
     const item: ChecklistItem = {

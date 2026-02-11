@@ -1,15 +1,19 @@
-import { test, expect, describe, beforeEach, afterEach } from "vitest";
-import Database from "better-sqlite3";
+import { test, expect, describe, beforeAll, beforeEach, afterEach } from "vitest";
+import { initSql, createAdapter, type SqliteAdapter } from "../src/sqlite-adapter.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerReadTools } from "../src/read-tools.js";
 import { _setDb } from "../src/db.js";
 
+beforeAll(async () => {
+  await initSql();
+});
+
 describe("read tool registration", () => {
-  let testDb: Database;
+  let testDb: SqliteAdapter;
 
   beforeEach(() => {
     // Provide an in-memory database so tools can be exercised
-    testDb = new Database(":memory:");
+    testDb = createAdapter();
     testDb.exec(`
       CREATE TABLE TMArea (uuid TEXT PRIMARY KEY, title TEXT, visible INTEGER DEFAULT 1, "index" INTEGER DEFAULT 0);
       CREATE TABLE TMTag (uuid TEXT PRIMARY KEY, title TEXT, shortcut TEXT, parent TEXT);

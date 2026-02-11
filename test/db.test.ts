@@ -1,5 +1,5 @@
-import { test, expect, describe, beforeEach, afterEach } from "vitest";
-import Database from "better-sqlite3";
+import { test, expect, describe, beforeAll, beforeEach, afterEach } from "vitest";
+import { initSql, createAdapter, type SqliteAdapter } from "../src/sqlite-adapter.js";
 import {
   coreDataTimestampToISO,
   dayIntegerToDate,
@@ -57,9 +57,13 @@ describe("todayAsDayInteger", () => {
 
 // --- Database Query Tests ---
 
-let testDb: Database;
+beforeAll(async () => {
+  await initSql();
+});
 
-function seedDatabase(db: Database): void {
+let testDb: SqliteAdapter;
+
+function seedDatabase(db: SqliteAdapter): void {
   // Create schema matching Things 3
   db.exec(`
     CREATE TABLE TMArea (
@@ -176,7 +180,7 @@ function seedDatabase(db: Database): void {
 }
 
 beforeEach(() => {
-  testDb = new Database(":memory:");
+  testDb = createAdapter();
   seedDatabase(testDb);
   _setDb(testDb);
 });
