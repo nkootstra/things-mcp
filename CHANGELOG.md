@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/nkootstra/things-mcp/compare/v1.0.2...v1.0.3) (2026-02-11)
+
+
+### Bug Fixes
+
+* add repository field to package.json ([da1b1d5](https://github.com/nkootstra/things-mcp/commit/da1b1d5129ced699091eff8d999d91754a60811e))
+
 ## [1.0.2](https://github.com/nkootstra/things-mcp/compare/v1.0.1...v1.0.2) (2026-02-11)
 
 
