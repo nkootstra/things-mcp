@@ -1,111 +1,53 @@
 ---
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
-globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
+description: Repository guidance for the Things MCP server.
+globs: "src/**/*.ts,test/**/*.ts,README.md,package.json"
 alwaysApply: false
 ---
 
-Default to using Bun instead of Node.js.
+# Things MCP Server Guidelines
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+This repository implements an MCP server that maps tool calls to the Things URL scheme.
 
-## APIs
+## Core focus
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+- Preserve 1:1 behavior with the official Things URL documentation.
+- Keep URL construction pure and testable (`src/url.ts`).
+- Keep tool schemas and parameter mapping explicit (`src/tools.ts`).
+- Keep docs aligned with implementation (`README.md`).
 
-## Testing
+## MCP and Things behavior
 
-Use `bun test` to run tests.
+- Tool names should stay stable (`add-todo`, `update-todo`, `show`, etc.).
+- Use camelCase input names in tool schemas and map to Things kebab-case URL params.
+- Do not silently drop supported Things parameters.
+- For commands that require `auth-token`, fail fast with a clear `THINGS_AUTH_TOKEN` error.
+- For commands with required mutually dependent inputs (for example `show` requiring `id` or `query`), validate and return a clear error.
+- Prefer x-callback behavior when available and preserve callback fields returned by Things.
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+## Bun workflow
 
-test("hello world", () => {
-  expect(1).toBe(1);
-});
+Use Bun for all local workflows.
+
+- Install: `bun install`
+- Dev: `bun run dev`
+- Test: `bun test`
+- Build: `bun run build`
+
+## Testing expectations
+
+- Add or update tests for every behavior change.
+- Keep unit tests focused on URL generation and callback parsing.
+- Use `bun:test` only.
+- Before finishing work, run:
+
+```bash
+bun test
+bun run build
 ```
 
-## Frontend
+## Documentation expectations
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+When tool parameters or behavior changes:
 
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+- Update `README.md` tool descriptions and parameter lists.
+- Keep examples and caveats (xcall, auth token requirements) accurate.
