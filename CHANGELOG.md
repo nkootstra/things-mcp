@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/nkootstra/things-mcp/compare/v1.0.3...v1.0.4) (2026-02-11)
+
+
+### Bug Fixes
+
+* enforce conventional commit format on PR titles ([#11](https://github.com/nkootstra/things-mcp/issues/11)) ([5eaa8ce](https://github.com/nkootstra/things-mcp/commit/5eaa8cefce55c384b8f362f2b0cbbb16bb8df852))
+
 ## [1.0.3](https://github.com/nkootstra/things-mcp/compare/v1.0.2...v1.0.3) (2026-02-11)
 
 
