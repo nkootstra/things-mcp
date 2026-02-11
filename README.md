@@ -8,7 +8,7 @@ Published as: `@nkootstra/things-mcp`
 
 - macOS (Things 3 is macOS-only)
 - [Things 3](https://culturedcode.com/things/) installed
-- Node.js 18+ or [Bun](https://bun.sh/)
+- Node.js 22+ or [Bun](https://bun.sh/)
 
 ## Setup
 
