@@ -214,10 +214,9 @@ bun run build
   - Runs on pushes to `main`
   - Opens/updates a Release PR with version bump + changelog
   - When the Release PR is merged, it creates the version tag and GitHub Release
-- npm publishing is automated via `.github/workflows/publish.yml`:
-  - Triggered when a GitHub Release is published
-  - Verifies release tag version matches `package.json`
-  - Publishes with provenance to npm
+- npm publishing runs as part of the same `release-please.yml` workflow:
+  - When the Release PR is merged and a GitHub Release is created, the workflow continues to build and publish
+  - Publishes with provenance to npm (`npm publish --access public --provenance`)
 
 ### One-time setup
 
@@ -233,7 +232,7 @@ bun run build
 
 1. Merge changes into `main`.
 2. Review and merge the automated Release PR from Release Please.
-3. The publish workflow runs automatically on the created GitHub Release.
+3. The same workflow creates the GitHub Release, builds the package, and publishes to npm.
 
 ### Commit message examples for Release Please
 
