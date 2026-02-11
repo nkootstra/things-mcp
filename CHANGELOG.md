@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/nkootstra/things-mcp/compare/v1.1.3...v1.1.4) (2026-02-11)
+
+
+### Bug Fixes
+
+* replace better-sqlite3 with sql.js to fix native module compilation ([2df3bd4](https://github.com/nkootstra/things-mcp/commit/2df3bd4359f0c9b1ffdc693d4b46b1be295b701c))
+
 ## [1.1.3](https://github.com/nkootstra/things-mcp/compare/v1.1.2...v1.1.3) (2026-02-11)
 
 
