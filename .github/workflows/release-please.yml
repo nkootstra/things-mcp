@@ -35,7 +35,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.release.outputs.release_created
-        run: npm ci
+        run: npm ci --ignore-platform
 
       - name: Run tests
         if: steps.release.outputs.release_created
