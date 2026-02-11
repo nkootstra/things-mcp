@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/nkootstra/things-mcp/compare/v1.1.2...v1.1.3) (2026-02-11)
+
+
+### Bug Fixes
+
+* lower node engine requirement from &gt;=22 to &gt;=20 ([b09ec24](https://github.com/nkootstra/things-mcp/commit/b09ec242f97f7d456b5d081146e6f41b3a8263bd))
+
 ## [1.1.2](https://github.com/nkootstra/things-mcp/compare/v1.1.1...v1.1.2) (2026-02-11)
 
 
