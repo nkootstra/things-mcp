@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/nkootstra/things-mcp/compare/v1.1.0...v1.1.1) (2026-02-11)
+
+
+### Bug Fixes
+
+* replace bun:sqlite with better-sqlite3 for Node.js compatibility ([#15](https://github.com/nkootstra/things-mcp/issues/15)) ([5fa33c1](https://github.com/nkootstra/things-mcp/commit/5fa33c12060a9bedbc6bff5457a65eb2197a7540))
+
 ## [1.1.0](https://github.com/nkootstra/things-mcp/compare/v1.0.4...v1.1.0) (2026-02-11)
 
 
