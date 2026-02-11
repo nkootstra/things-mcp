@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/nkootstra/things-mcp/compare/v1.0.1...v1.0.2) (2026-02-11)
+
+
+### Bug Fixes
+
+* update copyright notice in LICENSE and clean up bun.lock dependencies ([7269067](https://github.com/nkootstra/things-mcp/commit/7269067823d2f66f45d23cdfbcf5eb9a67173a5e))
+
 ## [1.0.1](https://github.com/nkootstra/things-mcp/compare/v1.0.0...v1.0.1) (2026-02-11)
 
 
