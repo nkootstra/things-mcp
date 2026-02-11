@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/nkootstra/things-mcp/compare/v1.0.0...v1.0.1) (2026-02-11)
+
+
+### Bug Fixes
+
+* correct README release workflow documentation ([#6](https://github.com/nkootstra/things-mcp/issues/6)) ([4b9286c](https://github.com/nkootstra/things-mcp/commit/4b9286cdcdfe4e27594298bdf26d2fb190d3c449))
+
 ## 1.0.0 (2026-02-11)
 
 
