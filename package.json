@@ -1,12 +1,44 @@
 {
-  "name": "things-mcp",
-  "module": "index.ts",
+  "name": "@nkootstra/things-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Things 3 on macOS — full URL scheme support",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "main": "dist/index.js",
+  "bin": {
+    "things-mcp": "dist/index.js"
   },
-  "peerDependencies": {
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun --hot src/index.ts",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "mcp",
+    "things3",
+    "things",
+    "task-management",
+    "macos"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
     "typescript": "^5"
   }
 }

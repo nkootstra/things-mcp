@@ -1,0 +1,298 @@
+import { test, expect, describe } from "bun:test";
+import {
+  _parseXcallOutput,
+  buildUrl,
+  buildJsonUrl,
+  requireAuthToken,
+} from "../src/url.js";
+
+describe("buildUrl", () => {
+  test("simple add with title", () => {
+    const url = buildUrl("add", { title: "Buy milk" });
+    expect(url).toBe("things:///x-callback-url/add?title=Buy%20milk");
+  });
+
+  test("add with multiple params", () => {
+    const url = buildUrl("add", {
+      title: "Meeting notes",
+      notes: "Discuss Q1 goals",
+      when: "today",
+    });
+    expect(url).toContain("title=Meeting%20notes");
+    expect(url).toContain("notes=Discuss%20Q1%20goals");
+    expect(url).toContain("when=today");
+  });
+
+  test("omits undefined values", () => {
+    const url = buildUrl("add", {
+      title: "Test",
+      notes: undefined,
+      deadline: undefined,
+    });
+    expect(url).toBe("things:///x-callback-url/add?title=Test");
+  });
+
+  test("handles boolean true", () => {
+    const url = buildUrl("add", { title: "Done", completed: true });
+    expect(url).toContain("completed=true");
+  });
+
+  test("handles boolean false", () => {
+    const url = buildUrl("add", { title: "Not done", completed: false });
+    expect(url).toContain("completed=false");
+  });
+
+  test("includes auth token when provided", () => {
+    const url = buildUrl("update", { id: "abc123", title: "Updated" }, "my-token");
+    expect(url).toContain("auth-token=my-token");
+    expect(url).toContain("id=abc123");
+    expect(url).toContain("title=Updated");
+  });
+
+  test("auth token appears first in URL", () => {
+    const url = buildUrl("update", { id: "abc" }, "token123");
+    expect(url).toMatch(/\?auth-token=token123&/);
+  });
+
+  test("encodes special characters in values", () => {
+    const url = buildUrl("add", { title: "Buy milk & eggs" });
+    expect(url).toContain("title=Buy%20milk%20%26%20eggs");
+  });
+
+  test("encodes newlines in checklist items", () => {
+    const items = "Item 1\nItem 2\nItem 3";
+    const url = buildUrl("add", { "checklist-items": items });
+    expect(url).toContain("checklist-items=Item%201%0AItem%202%0AItem%203");
+  });
+
+  test("encodes comma-separated tags", () => {
+    const url = buildUrl("add", { title: "Test", tags: "work,urgent" });
+    expect(url).toContain("tags=work%2Curgent");
+  });
+
+  test("show command with built-in list ID", () => {
+    const url = buildUrl("show", { id: "today" });
+    expect(url).toBe("things:///x-callback-url/show?id=today");
+  });
+
+  test("show command with all built-in list IDs", () => {
+    const lists = [
+      "inbox", "today", "anytime", "upcoming", "someday",
+      "logbook", "tomorrow", "deadlines", "repeating",
+      "all-projects", "logged-projects",
+    ];
+    for (const id of lists) {
+      const url = buildUrl("show", { id });
+      expect(url).toContain(`id=${id}`);
+    }
+  });
+
+  test("search command", () => {
+    const url = buildUrl("search", { query: "groceries" });
+    expect(url).toBe("things:///x-callback-url/search?query=groceries");
+  });
+
+  test("version command with no params", () => {
+    const url = buildUrl("version", {});
+    expect(url).toBe("things:///x-callback-url/version");
+  });
+
+  test("add-project command", () => {
+    const url = buildUrl("add-project", {
+      title: "Home Renovation",
+      "to-dos": "Kitchen\nBathroom\nBedroom",
+      area: "Home",
+    });
+    expect(url).toContain("title=Home%20Renovation");
+    expect(url).toContain("to-dos=Kitchen%0ABathroom%0ABedroom");
+    expect(url).toContain("area=Home");
+  });
+
+  test("update command requires auth token in params", () => {
+    const url = buildUrl(
+      "update",
+      { id: "xyz", "append-notes": "Added later" },
+      "secret-token",
+    );
+    expect(url).toContain("auth-token=secret-token");
+    expect(url).toContain("append-notes=Added%20later");
+  });
+
+  test("encodes unicode characters", () => {
+    const url = buildUrl("add", { title: "Acheter du lait" });
+    expect(url).toContain("title=Acheter%20du%20lait");
+  });
+
+  test("handles empty string values", () => {
+    const url = buildUrl("update", { id: "abc", deadline: "" }, "token");
+    expect(url).toContain("deadline=");
+  });
+
+  test("datetime when parameter", () => {
+    const url = buildUrl("add", { title: "Meeting", when: "2026-03-15@14:00" });
+    expect(url).toContain("when=2026-03-15%4014%3A00");
+  });
+
+  test("ISO8601 creation-date parameter", () => {
+    const url = buildUrl("add", {
+      title: "Old task",
+      "creation-date": "2026-01-01T09:00:00Z",
+    });
+    expect(url).toContain("creation-date=2026-01-01T09%3A00%3A00Z");
+  });
+
+  test("add supports use-clipboard without title", () => {
+    const url = buildUrl("add", {
+      "use-clipboard": true,
+      "show-quick-entry": true,
+    });
+    expect(url).toContain("use-clipboard=true");
+    expect(url).toContain("show-quick-entry=true");
+    expect(url).not.toContain("title=");
+  });
+});
+
+describe("buildJsonUrl", () => {
+  test("encodes single todo item", () => {
+    const items = [
+      {
+        type: "to-do",
+        attributes: { title: "Buy milk" },
+      },
+    ];
+    const url = buildJsonUrl(items);
+    expect(url).toStartWith("things:///x-callback-url/json?data=");
+    // Verify the data can be decoded back
+    const dataParam = url.split("data=")[1]!;
+    const decoded = JSON.parse(decodeURIComponent(dataParam));
+    expect(decoded).toEqual(items);
+  });
+
+  test("encodes multiple items", () => {
+    const items = [
+      { type: "to-do", attributes: { title: "Task 1" } },
+      { type: "to-do", attributes: { title: "Task 2" } },
+    ];
+    const url = buildJsonUrl(items);
+    const dataParam = url.split("data=")[1]!;
+    const decoded = JSON.parse(decodeURIComponent(dataParam));
+    expect(decoded).toHaveLength(2);
+  });
+
+  test("includes auth token", () => {
+    const items = [{ type: "to-do", operation: "update", id: "abc" }];
+    const url = buildJsonUrl(items, "my-token");
+    expect(url).toContain("auth-token=my-token");
+  });
+
+  test("includes reveal flag", () => {
+    const items = [{ type: "to-do", attributes: { title: "Test" } }];
+    const url = buildJsonUrl(items, undefined, true);
+    expect(url).toContain("reveal=true");
+  });
+
+  test("includes both auth token and reveal", () => {
+    const items = [{ type: "to-do", attributes: { title: "Test" } }];
+    const url = buildJsonUrl(items, "token", true);
+    expect(url).toContain("auth-token=token");
+    expect(url).toContain("reveal=true");
+  });
+
+  test("no auth token or reveal produces clean URL", () => {
+    const items = [{ type: "to-do", attributes: { title: "Test" } }];
+    const url = buildJsonUrl(items);
+    expect(url).not.toContain("auth-token");
+    expect(url).not.toContain("reveal");
+  });
+
+  test("encodes project with nested items", () => {
+    const items = [
+      {
+        type: "project",
+        attributes: {
+          title: "Renovation",
+          items: [
+            { type: "to-do", attributes: { title: "Kitchen" } },
+            { type: "heading", attributes: { title: "Phase 2" } },
+            { type: "to-do", attributes: { title: "Bathroom" } },
+          ],
+        },
+      },
+    ];
+    const url = buildJsonUrl(items);
+    const dataParam = url.split("data=")[1]!;
+    const decoded = JSON.parse(decodeURIComponent(dataParam));
+    expect(decoded[0].attributes.items).toHaveLength(3);
+  });
+
+  test("encodes checklist items within todo", () => {
+    const items = [
+      {
+        type: "to-do",
+        attributes: {
+          title: "Shopping",
+          "checklist-items": [
+            { type: "checklist-item", attributes: { title: "Milk", completed: false } },
+            { type: "checklist-item", attributes: { title: "Eggs", completed: true } },
+          ],
+        },
+      },
+    ];
+    const url = buildJsonUrl(items);
+    const dataParam = url.split("data=")[1]!;
+    const decoded = JSON.parse(decodeURIComponent(dataParam));
+    expect(decoded[0].attributes["checklist-items"]).toHaveLength(2);
+  });
+});
+
+describe("requireAuthToken", () => {
+  const originalEnv = process.env.THINGS_AUTH_TOKEN;
+
+  test("returns token when set", () => {
+    process.env.THINGS_AUTH_TOKEN = "test-token";
+    expect(requireAuthToken()).toBe("test-token");
+    // Restore
+    if (originalEnv) process.env.THINGS_AUTH_TOKEN = originalEnv;
+    else delete process.env.THINGS_AUTH_TOKEN;
+  });
+
+  test("throws when not set", () => {
+    const saved = process.env.THINGS_AUTH_TOKEN;
+    delete process.env.THINGS_AUTH_TOKEN;
+    expect(() => requireAuthToken()).toThrow("THINGS_AUTH_TOKEN");
+    // Restore
+    if (saved) process.env.THINGS_AUTH_TOKEN = saved;
+  });
+
+  test("error message includes setup instructions", () => {
+    const saved = process.env.THINGS_AUTH_TOKEN;
+    delete process.env.THINGS_AUTH_TOKEN;
+    try {
+      requireAuthToken();
+    } catch (e) {
+      expect((e as Error).message).toContain("Settings");
+      expect((e as Error).message).toContain("Enable Things URLs");
+    }
+    if (saved) process.env.THINGS_AUTH_TOKEN = saved;
+  });
+});
+
+describe("_parseXcallOutput", () => {
+  test("parses callback JSON with single x-things-id", () => {
+    const result = _parseXcallOutput('{"x-things-id":"abc123"}');
+    expect(result.callbackParams?.["x-things-id"]).toBe("abc123");
+    expect(result.thingsId).toBe("abc123");
+  });
+
+  test("parses callback JSON with x-things-ids", () => {
+    const result = _parseXcallOutput('{"x-things-ids":"one,two"}');
+    expect(result.callbackParams?.["x-things-ids"]).toBe("one,two");
+    expect(result.thingsId).toBe("one,two");
+  });
+
+  test("falls back to raw output", () => {
+    const result = _parseXcallOutput("abc123");
+    expect(result.thingsId).toBe("abc123");
+    expect(result.callbackParams).toBeUndefined();
+  });
+});
